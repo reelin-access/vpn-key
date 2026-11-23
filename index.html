@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reelin VPN key</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1b1f24;
+    --muted: #59636e;
+    --line: #d5dbe1;
+    --accent: #0b5cd5;
+    --accent-hover: #0a4cb0;
+    --accent-text: #ffffff;
+    --code-bg: #edf0f3;
+    --warn-bg: #fff4e0;
+    --warn-line: #d08a00;
+    --error: #b42318;
+    --ok: #1a7f37;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216;
+      --card: #181c22;
+      --text: #e6e9ed;
+      --muted: #9ba5b0;
+      --line: #2e353e;
+      --accent: #5b97ff;
+      --accent-hover: #7aabff;
+      --accent-text: #0b1322;
+      --code-bg: #20262e;
+      --warn-bg: #2b2213;
+      --warn-line: #c08f2a;
+      --error: #ff8a80;
+      --ok: #4cc764;
+    }
+  }
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 28px 16px 48px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 12px; }
+  h2 { font-size: 1.3rem; line-height: 1.3; margin: 0 0 10px; }
+  h3 { font-size: 1.1rem; margin: 22px 0 8px; }
+  p { margin: 0 0 12px; }
+  a { color: var(--accent); }
+  .muted { color: var(--muted); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    margin: 0 0 16px;
+  }
+  .lead { font-size: 1.1rem; }
+  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0 0 24px; }
+  ol.steps > li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 0 14px;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: grid;
+    place-items: center;
+  }
+  label { display: block; font-weight: 600; margin: 0 0 6px; }
+  input[type="text"] {
+    width: 100%;
+    font: 1.35rem/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    padding: 12px 14px;
+    color: var(--text);
+    background: var(--bg);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+  }
+  input[type="text"]:focus { outline: none; border-color: var(--accent); }
+  input[type="text"]:disabled { color: var(--muted); }
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 650;
+  }
+  button:hover:not(:disabled) { background: var(--accent-hover); }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: 0.45; cursor: default; }
+  button.big { display: block; width: 100%; padding: 16px 20px; font-size: 1.25rem; margin: 14px 0 0; }
+  button.small { padding: 10px 18px; font-size: 1rem; flex: 0 0 auto; }
+  .error { color: var(--error); font-weight: 600; margin: 10px 0 0; }
+  .ok { color: var(--ok); font-weight: 600; }
+  .ok:empty { display: none; }
+  .after { margin-top: 12px; }
+  .key-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; margin: 16px 0 10px; }
+  .key {
+    flex: 1 1 18rem;
+    min-width: 0;
+    margin: 0;
+    padding: 12px 14px;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font: 1.05rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    word-break: break-all;
+    user-select: all;
+    -webkit-user-select: all;
+  }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 0 0 12px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+  ol.plain { padding-left: 1.4rem; margin: 0 0 12px; }
+  ol.plain li { margin: 0 0 6px; }
+  .warn {
+    background: var(--warn-bg);
+    border-left: 5px solid var(--warn-line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 0 0 16px;
+  }
+  .warn p:last-child, .card p:last-child { margin-bottom: 0; }
+  footer { font-size: 0.92rem; }
+  @media (max-width: 30rem) {
+    body { font-size: 16px; }
+    h1 { font-size: 1.6rem; }
+    .card { padding: 16px; }
+    ol.steps > li { grid-template-columns: 2.2rem minmax(0, 1fr); gap: 0 10px; }
+    ol.steps > li::before { width: 2.2rem; height: 2.2rem; font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Your Reelin VPN key</h1>
+    <p class="lead">This page makes the key your computer needs to join the Reelin VPN. It all happens inside your browser: nothing you type and nothing it makes is sent anywhere.</p>
+  </header>
+
+  <noscript><p class="card error">This page needs JavaScript to make your key. Turn it on, or open the page in a current Chrome, Edge, Firefox or Safari.</p></noscript>
+  <p id="unsupported" class="card error" hidden>This browser cannot make the key. Open this page in a current Chrome, Edge, Firefox or Safari.</p>
+
+  <main id="steps" hidden>
+    <p class="card"><strong>Before you start:</strong> ask Vincent on Teams for a VPN address. It looks like <code>10.8.0.23</code>.</p>
+
+    <ol class="steps">
+      <li class="card">
+        <div>
+          <h2>Type your VPN address</h2>
+          <form id="address-form" autocomplete="off">
+            <label for="address">VPN address</label>
+            <input id="address" type="text" inputmode="decimal" placeholder="10.8.0.23" spellcheck="false" autocapitalize="off">
+            <p id="address-error" class="error" role="alert" hidden>That is not an address Vincent gives out. Type the one he sent you, such as 10.8.0.23: <code>10.8.0.</code> and a number from 2 to 254.</p>
+          </form>
+        </div>
+      </li>
+
+      <li class="card">
+        <div>
+          <h2>Make your key</h2>
+          <button id="make" class="big" type="submit" form="address-form">Make my key</button>
+          <div id="made" hidden>
+            <div class="key-row">
+              <output id="public-key" class="key" aria-label="Your public key"></output>
+              <button id="copy" class="small" type="button">Copy</button>
+            </div>
+            <p id="copied" class="ok" aria-live="polite"></p>
+            <p>This is your <strong>public key</strong>, made for the address <strong id="made-for"></strong>. It is not secret: it goes into your request.</p>
+            <p class="muted">Wrong address? Reload this page and start again.</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="card">
+        <div>
+          <h2>Save your key file</h2>
+          <p>The file holds the private half of your key, and it is the only copy: this page keeps none. Save it before you leave this page.</p>
+          <button id="save" class="big" type="button" disabled>Save reelin.conf</button>
+          <div id="saved" hidden>
+            <p class="ok after">Saved as <code>reelin.conf</code>, usually in your Downloads folder.</p>
+            <p class="muted">Cannot find it? Reload this page and start again. That makes a new key, with a new public key.</p>
+          </div>
+        </div>
+      </li>
+    </ol>
+
+    <div class="warn">
+      <p><strong>The file is your key.</strong> Never send it to anyone, and never paste what is in it anywhere, not even to Vincent. Anyone who has it can join the VPN as you.</p>
+    </div>
+
+    <section class="card">
+      <h2>Then: send your public key</h2>
+      <p>Open the <a href="https://github.com/Reelin-Robotics/access-requests/issues/new/choose" target="_blank" rel="noopener noreferrer">request form</a>, choose <strong>New VPN device</strong>, and paste the public key into it.</p>
+      <p>No GitHub account? Send the public key to Vincent on Teams instead.</p>
+      <p>Send the public key only, never the file. You are told when your request is applied: by an email from GitHub, or by Vincent.</p>
+    </section>
+
+    <section class="card">
+      <h2>Windows</h2>
+      <ol class="plain">
+        <li>Install WireGuard from <a href="https://www.wireguard.com/install/" target="_blank" rel="noopener noreferrer">wireguard.com/install</a>.</li>
+        <li>In WireGuard, click <strong>Import tunnel(s) from file</strong> and choose <code>reelin.conf</code>.</li>
+        <li>Delete <code>reelin.conf</code> from your Downloads folder. WireGuard keeps its own copy.</li>
+        <li>Once you are told your request is applied, click <strong>Activate</strong>.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Ubuntu</h2>
+      <p>In a Terminal:</p>
+      <pre><code>sudo apt install -y wireguard</code></pre>
+      <p>On Ubuntu 22.04, also:</p>
+      <pre><code>sudo apt install -y resolvconf</code></pre>
+      <p>Then put the file in place and delete the downloaded copy:</p>
+      <pre><code>sudo install -m 600 ~/Downloads/reelin.conf /etc/wireguard/wg0.conf
+rm ~/Downloads/reelin.conf</code></pre>
+      <p>Once you are told your request is applied:</p>
+      <pre><code>sudo systemctl enable --now wg-quick@wg0</code></pre>
+      <p>This connects now and at every start of the computer.</p>
+    </section>
+  </main>
+
+  <footer class="muted">
+    <p>This page holds nothing secret: only the VPN server's public key, its address and the VPN's address ranges. Its code is at <a href="https://github.com/reelin-access/vpn-key" target="_blank" rel="noopener noreferrer">github.com/reelin-access/vpn-key</a>.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const HUB_KEY = 'qh+qUrZtbgsMm4A7qxGmSGHn+BiOi42uHCuxFFEpLFU=';
+  const el = (id) => document.getElementById(id);
+
+  // The only reference to the private key between "Make my key" and "Save" is this Blob.
+  let file = null;
+
+  const toBase64 = (bytes) => btoa(String.fromCharCode(...bytes));
+  const fromBase64url = (text) =>
+    Uint8Array.from(atob(text.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+
+  // A device address lies in 10.8.0.0/24 and is none of .0, .1 (the VPN server) and .255.
+  function vpnAddress(text) {
+    const match = /^10\.8\.0\.([1-9][0-9]{0,2})$/.exec(text.trim());
+    const host = match ? Number(match[1]) : 0;
+    return host >= 2 && host <= 254 ? `10.8.0.${host}` : null;
+  }
+
+  function unsupported() {
+    el('steps').hidden = true;
+    el('unsupported').hidden = false;
+  }
+
+  async function makeKey(address) {
+    const pair = await crypto.subtle.generateKey({ name: 'X25519' }, true, ['deriveBits']);
+    const jwk = await crypto.subtle.exportKey('jwk', pair.privateKey);
+    const secret = fromBase64url(jwk.d);
+    // Clamped as `wg genkey` clamps; X25519 clamps the scalar itself, so the public key stays jwk.x.
+    secret[0] &= 248;
+    secret[31] = (secret[31] & 127) | 64;
+    file = new Blob([
+      '[Interface]\n',
+      `PrivateKey = ${toBase64(secret)}\n`,
+      `Address = ${address}/32\n`,
+      'DNS = 10.8.0.1\n',
+      '\n',
+      '[Peer]\n',
+      `PublicKey = ${HUB_KEY}\n`,
+      'AllowedIPs = 10.8.0.0/24, 10.80.0.0/16\n',
+      'Endpoint = vpn.reelinrobotics.com:51820\n',
+      'PersistentKeepalive = 25\n',
+    ], { type: 'application/octet-stream' });
+    secret.fill(0);
+    return toBase64(fromBase64url(jwk.x));
+  }
+
+  el('address-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const address = vpnAddress(el('address').value);
+    el('address-error').hidden = address !== null;
+    if (address === null) return;
+    el('address').disabled = true;
+    el('make').disabled = true;
+    try {
+      el('public-key').textContent = await makeKey(address);
+    } catch {
+      unsupported();
+      return;
+    }
+    el('made-for').textContent = address;
+    el('made').hidden = false;
+    el('save').disabled = false;
+  });
+
+  el('copy').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(el('public-key').textContent);
+      el('copied').textContent = 'Copied.';
+    } catch {
+      el('copied').textContent = 'Copying did not work here: select the key and copy it.';
+    }
+  });
+
+  el('save').addEventListener('click', () => {
+    const url = URL.createObjectURL(file);
+    file = null;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'reelin.conf';
+    link.click();
+    // Some browsers read the Blob only after click() returns, so the URL outlives this handler briefly.
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    el('save').disabled = true;
+    el('saved').hidden = false;
+  });
+
+  (async () => {
+    try {
+      await crypto.subtle.generateKey({ name: 'X25519' }, false, ['deriveBits']);
+    } catch {
+      unsupported();
+      return;
+    }
+    el('steps').hidden = false;
+  })();
+})();
+</script>
+</body>
+</html>
