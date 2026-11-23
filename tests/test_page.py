@@ -16,7 +16,7 @@ from playwright.sync_api import sync_playwright
 PAGE = Path(__file__).resolve().parent.parent / "index.html"
 HUB_KEY = "qh+qUrZtbgsMm4A7qxGmSGHn+BiOi42uHCuxFFEpLFU="
 WG = "/usr/bin/wg"
-# 32 bytes in base64: 43 characters, the last carrying 2 bits and 4 zero bits, then one "=".
+# 32 bytes in base64: 43 characters, the last carrying 4 bits and 2 zero bits, then one "=".
 KEY = re.compile(r"[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=")
 
 
@@ -47,6 +47,7 @@ class KeyPageTest(unittest.TestCase):
     def open(self):
         self.page.goto(PAGE.as_uri())
         self.page.locator("#steps").wait_for(state="visible")
+        self.assertTrue(self.page.locator("#unsupported").is_hidden())
 
     def assert_quiet(self):
         """The page requested nothing but itself, and wrote nothing to the console."""
@@ -82,6 +83,7 @@ class KeyPageTest(unittest.TestCase):
             """() => new Promise((resolve) => {
                 document.addEventListener('securitypolicyviolation',
                     (event) => resolve(event.effectiveDirective), { once: true });
+                setTimeout(() => resolve('no violation'), 5000);
                 fetch('https://example.invalid/').catch(() => {});
             })"""
         )
@@ -172,6 +174,14 @@ class KeyPageTest(unittest.TestCase):
         self.assertTrue(self.page.locator("#save").is_disabled())
         self.assertTrue(self.page.locator("#saved").is_visible())
         self.assertFalse(any(private in text for text in self.console), "the private key reached the console")
+
+        stored = self.page.evaluate(
+            "async () => [localStorage.length, sessionStorage.length, (await indexedDB.databases()).length]"
+        )
+        self.assertEqual(stored, [0, 0, 0], "local storage, session storage, IndexedDB databases")
+        state = self.context.storage_state()
+        self.assertTrue(not state["cookies"], f"{len(state['cookies'])} cookies")
+        self.assertTrue(not state["origins"], f"{len(state['origins'])} origins with stored data")
         self.assert_quiet()
 
     def test_browser_without_x25519_is_sent_to_a_current_browser(self):
@@ -185,6 +195,16 @@ class KeyPageTest(unittest.TestCase):
         self.assertIn("current Chrome, Edge, Firefox or Safari", message.inner_text())
         self.assertTrue(self.page.locator("#steps").is_hidden())
         self.assert_quiet()
+
+    def test_browser_that_runs_no_script_is_sent_to_a_current_browser(self):
+        context = self.browser.new_context(java_script_enabled=False)
+        self.addCleanup(context.close)
+        page = context.new_page()
+        page.goto(PAGE.as_uri())
+        message = page.locator("#unsupported")
+        self.assertTrue(message.is_visible())
+        self.assertIn("current Chrome, Edge, Firefox or Safari", message.inner_text())
+        self.assertTrue(page.locator("#steps").is_hidden())
 
 
 if __name__ == "__main__":

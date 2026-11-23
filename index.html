@@ -167,7 +167,7 @@
   </header>
 
   <noscript><p class="card error">This page needs JavaScript to make your key. Turn it on, or open the page in a current Chrome, Edge, Firefox or Safari.</p></noscript>
-  <p id="unsupported" class="card error" hidden>This browser cannot make the key. Open this page in a current Chrome, Edge, Firefox or Safari.</p>
+  <p id="unsupported" class="card error">This browser cannot make the key. Open this page in a current Chrome, Edge, Firefox or Safari.</p>
 
   <main id="steps" hidden>
     <p class="card"><strong>Before you start:</strong> ask Vincent on Teams for a VPN address. It looks like <code>10.8.0.23</code>.</p>
@@ -204,9 +204,10 @@
         <div>
           <h2>Save your key file</h2>
           <p>The file holds the private half of your key, and it is the only copy: this page keeps none. Save it before you leave this page.</p>
+          <p>Saving again after a reload? First delete the earlier <code>reelin.conf</code> from your Downloads folder.</p>
           <button id="save" class="big" type="button" disabled>Save reelin.conf</button>
           <div id="saved" hidden>
-            <p class="ok after">Saved as <code>reelin.conf</code>, usually in your Downloads folder.</p>
+            <p class="ok after">Your browser saves it as <code>reelin.conf</code>, usually in your Downloads folder. If an earlier one is still there, it may name the new one <code>reelin (1).conf</code>.</p>
             <p class="muted">Cannot find it? Reload this page and start again. That makes a new key, with a new public key.</p>
           </div>
         </div>
@@ -219,17 +220,17 @@
 
     <section class="card">
       <h2>Then: send your public key</h2>
-      <p>Open the <a href="https://github.com/Reelin-Robotics/access-requests/issues/new/choose" target="_blank" rel="noopener noreferrer">request form</a>, choose <strong>New VPN device</strong>, and paste the public key into it.</p>
-      <p>No GitHub account? Send the public key to Vincent on Teams instead.</p>
-      <p>Send the public key only, never the file. You are told when your request is applied: by an email from GitHub, or by Vincent.</p>
+      <p>Open the <a href="https://github.com/Reelin-Robotics/access-requests/issues/new/choose" target="_blank" rel="noopener noreferrer">request form</a>, choose <strong>New VPN device</strong>, type the same VPN address you typed in step 1 into <strong>VPN address</strong>, and paste the public key.</p>
+      <p>No GitHub account? Send the public key and your VPN address to Vincent on Teams instead.</p>
+      <p>Never send the file. You are told when your request is applied: by an email from GitHub, or by Vincent.</p>
     </section>
 
     <section class="card">
       <h2>Windows</h2>
       <ol class="plain">
         <li>Install WireGuard from <a href="https://www.wireguard.com/install/" target="_blank" rel="noopener noreferrer">wireguard.com/install</a>.</li>
-        <li>In WireGuard, click <strong>Import tunnel(s) from file</strong> and choose <code>reelin.conf</code>.</li>
-        <li>Delete <code>reelin.conf</code> from your Downloads folder. WireGuard keeps its own copy.</li>
+        <li>In WireGuard, click <strong>Import tunnel(s) from file</strong> and choose the file you saved.</li>
+        <li>In your Downloads folder, select the file you saved and press <strong>Shift+Delete</strong>, so that it does not stay in the Recycle Bin. WireGuard keeps its own copy.</li>
         <li>Once you are told your request is applied, click <strong>Activate</strong>.</li>
       </ol>
     </section>
@@ -240,9 +241,10 @@
       <pre><code>sudo apt install -y wireguard</code></pre>
       <p>On Ubuntu 22.04, also:</p>
       <pre><code>sudo apt install -y resolvconf</code></pre>
-      <p>Then put the file in place and delete the downloaded copy:</p>
+      <p>Then put the file you saved in place and delete the downloaded copy:</p>
       <pre><code>sudo install -m 600 ~/Downloads/reelin.conf /etc/wireguard/wg0.conf
 rm ~/Downloads/reelin.conf</code></pre>
+      <p>If the file you saved has another name, such as <code>reelin (1).conf</code>, use that name in both lines, in quotes: <code>~/Downloads/"reelin (1).conf"</code>.</p>
       <p>Once you are told your request is applied:</p>
       <pre><code>sudo systemctl enable --now wg-quick@wg0</code></pre>
       <p>This connects now and at every start of the computer.</p>
@@ -260,6 +262,9 @@ rm ~/Downloads/reelin.conf</code></pre>
 
   const HUB_KEY = 'qh+qUrZtbgsMm4A7qxGmSGHn+BiOi42uHCuxFFEpLFU=';
   const el = (id) => document.getElementById(id);
+
+  // The message starts visible so that a browser unable to run this script still shows it.
+  el('unsupported').hidden = true;
 
   // The only reference to the private key between "Make my key" and "Save" is this Blob.
   let file = null;
